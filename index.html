@@ -5,6 +5,222 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador SDumont — Aprenda supercomputação do zero</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Inline critical styles — garante que o preview renderize mesmo se o style.css externo não carregar */
+        :root {
+            --bg: #0b0f14;
+            --surface: #151b23;
+            --surface-alt: #1d252f;
+            --border: #2a3340;
+            --text: #e6edf3;
+            --text-dim: #8b949e;
+            --accent: #3fb950;
+            --accent-alt: #58a6ff;
+            --danger: #f85149;
+            --warning: #d29922;
+            --node-idle: #3fb950;
+            --node-mix: #d29922;
+            --node-alloc: #f85149;
+            --node-down: #6e7681;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        body {
+            background: #0b0f14;
+            color: #e6edf3;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            overflow: hidden;
+        }
+        button { font: inherit; color: #e6edf3; background: none; border: none; cursor: pointer; }
+        code { background: #1d252f; padding: 1px 6px; border-radius: 3px; font-family: "JetBrains Mono", Consolas, monospace; font-size: 0.9em; color: #3fb950; }
+        a { color: #58a6ff; }
+        h1, h2, h3, h4, h5, h6 { color: #e6edf3; }
+        p, li, td, th, span, div { color: inherit; }
+
+        .app-shell {
+            display: grid;
+            height: 100vh;
+            grid-template-columns: 32% 68%;
+            grid-template-rows: 56px 55% 1fr;
+            grid-template-areas:
+                "topo topo"
+                "narrador dashboard"
+                "narrador terminal";
+        }
+        .topo {
+            grid-area: topo;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 16px;
+            background: #151b23;
+            border-bottom: 1px solid #2a3340;
+        }
+        .selo-v1 {
+            font-weight: 600;
+            color: #58a6ff;
+            padding: 6px 12px;
+            background: #1d252f;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+        .progresso { flex: 1; display: flex; align-items: center; color: #8b949e; font-size: 13px; padding: 0 12px; }
+        .cards-fixos { display: flex; gap: 4px; }
+        .cards-fixos button { font-size: 18px; padding: 6px 10px; border-radius: 4px; color: #e6edf3; }
+        .cards-fixos button:hover { background: #1d252f; }
+        .narrador {
+            grid-area: narrador;
+            background: #151b23;
+            border-right: 1px solid #2a3340;
+            padding: 24px;
+            overflow-y: auto;
+            color: #e6edf3;
+        }
+        .narrador h2, .narrador h3 { color: #58a6ff; margin-bottom: 16px; }
+        .narrador h3 { color: #3fb950; margin: 24px 0 8px 0; }
+        .narrador ol, .narrador ul { padding-left: 20px; line-height: 1.8; color: #e6edf3; }
+        .narrador ol li, .narrador ul li { margin-bottom: 6px; color: #e6edf3; }
+        .narrador p { color: #8b949e; font-size: 12px; margin-top: 16px; }
+        .narrador strong { color: #e6edf3; font-weight: 700; }
+        .dashboard {
+            grid-area: dashboard;
+            background: #0b0f14;
+            border-bottom: 1px solid #2a3340;
+            padding: 16px;
+            overflow-y: auto;
+            color: #e6edf3;
+        }
+        .terminal {
+            grid-area: terminal;
+            background: #000;
+            color: #e6edf3;
+            font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+            font-size: 13px;
+            padding: 16px;
+            overflow-y: auto;
+            cursor: text;
+        }
+        .nodegrid-root { display: flex; flex-direction: column; gap: 16px; }
+        .node-group h4 {
+            font-size: 13px; color: #8b949e; margin-bottom: 4px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .node-grid { display: grid; grid-template-columns: repeat(auto-fill, 14px); gap: 2px; }
+        .node {
+            display: inline-block; width: 14px; height: 14px;
+            border-radius: 2px; background: #3fb950;
+            transition: background 0.3s ease, transform 0.1s ease;
+        }
+        .node:hover { transform: scale(1.4); z-index: 1; }
+        .node.idle  { background: #3fb950; }
+        .node.mix   { background: #d29922; }
+        .node.alloc { background: #f85149; }
+        .node.down  { background: #6e7681; }
+        .queue-section { margin-top: 24px; }
+        .queue-section h4 {
+            font-size: 13px; color: #8b949e; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 8px;
+        }
+        .queue-empty { color: #8b949e; font-style: italic; padding: 8px; }
+        .queue-table {
+            width: 100%; border-collapse: collapse;
+            font-family: "JetBrains Mono", Consolas, monospace;
+            font-size: 12px; color: #e6edf3;
+        }
+        .queue-table th {
+            text-align: left; padding: 4px 8px; color: #8b949e;
+            border-bottom: 1px solid #2a3340; font-weight: 600;
+            font-size: 11px; text-transform: uppercase;
+        }
+        .queue-table td { padding: 4px 8px; border-bottom: 1px solid #1d252f; color: #e6edf3; }
+        .queue-table tr.row-me { background: rgba(88, 166, 255, 0.15); }
+        .queue-table tr.row-me td { font-weight: 600; }
+        .st-R  { color: #3fb950; font-weight: 600; }
+        .st-PD { color: #d29922; }
+        .st-CD { color: #8b949e; }
+        .st-F  { color: #f85149; }
+        .st-CA { color: #8b949e; }
+        .st-CG { color: #3fb950; }
+        .term-output { white-space: pre-wrap; word-wrap: break-word; color: #e6edf3; }
+        .term-input-line { display: flex; align-items: center; margin-top: 2px; }
+        .term-prompt { color: #3fb950; white-space: pre; user-select: none; }
+        .term-input {
+            flex: 1; background: transparent; border: none; outline: none;
+            color: #e6edf3; font-family: inherit; font-size: inherit;
+            caret-color: #3fb950;
+        }
+        .term-output .err { color: #f85149; }
+        .term-output .prompt-line { color: #3fb950; }
+
+        /* Progress stepper */
+        .progresso-track { display: flex; gap: 2px; align-items: center; width: 100%; overflow-x: auto; }
+        .step {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 10px; background: #1d252f; border: 1px solid #2a3340;
+            border-radius: 4px; color: #8b949e; white-space: nowrap;
+            font-size: 12px; cursor: pointer;
+        }
+        .step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #2a3340; font-weight: 600; font-size: 11px;
+        }
+        .step.done { color: #3fb950; border-color: #3fb950; }
+        .step.done .step-num { background: #3fb950; color: #0b0f14; }
+        .step.active { color: #58a6ff; border-color: #58a6ff; }
+        .step.active .step-num { background: #58a6ff; color: #0b0f14; }
+        .step.locked { opacity: 0.4; cursor: not-allowed; }
+        .step.sandbox.unlocked { border-color: #d29922; color: #d29922; }
+        .step.sandbox.locked { opacity: 0.3; }
+
+        /* Narrator */
+        .narrator-inner { display: flex; flex-direction: column; gap: 16px; }
+        .narrator-breadcrumb {
+            color: #8b949e; font-size: 12px; display: flex;
+            justify-content: space-between; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .sub-counter { font-family: "JetBrains Mono", Consolas, monospace; }
+        .narrator-titulo {
+            color: #58a6ff; font-size: 18px; border-bottom: 1px solid #2a3340;
+            padding-bottom: 8px; margin: 0;
+        }
+        .narrator-corpo { line-height: 1.65; color: #e6edf3; font-size: 14px; }
+        .narrator-corpo p { margin-bottom: 12px; }
+        .narrator-corpo ul, .narrator-corpo ol { margin: 8px 0 12px 20px; }
+        .narrator-corpo li { margin-bottom: 4px; }
+        .narrator-corpo code {
+            background: #1d252f; padding: 1px 6px; border-radius: 3px;
+            font-family: "JetBrains Mono", Consolas, monospace; font-size: 0.9em; color: #3fb950;
+        }
+        .narrator-corpo pre {
+            background: #000; padding: 12px; border-radius: 4px;
+            overflow-x: auto; border-left: 3px solid #3fb950; margin: 8px 0;
+        }
+        .narrator-corpo pre code { background: transparent; color: #e6edf3; padding: 0; }
+        .narrator-corpo strong { color: #e6edf3; font-weight: 700; }
+        .narrator-corpo ol.guardian {
+            background: #1d252f; border-left: 4px solid #58a6ff;
+            padding: 12px 12px 12px 36px; border-radius: 0 4px 4px 0;
+        }
+        .narrator-corpo ol.guardian li { margin-bottom: 8px; }
+        .narrator-botoes {
+            display: flex; justify-content: space-between; gap: 16px;
+            margin-top: 8px; padding-top: 12px; border-top: 1px solid #2a3340;
+        }
+        .btn-back, .btn-next {
+            padding: 8px 16px; border-radius: 4px; background: #1d252f;
+            border: 1px solid #2a3340; font-weight: 600; color: #e6edf3; font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-next:not(:disabled) { background: #3fb950; color: #0b0f14; border-color: #3fb950; }
+        .btn-back:disabled, .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-back:hover:not(:disabled), .btn-next:hover:not(:disabled) { filter: brightness(1.15); }
+    </style>
 </head>
 <body>
     <div id="app" class="app-shell">
@@ -12,41 +228,13 @@
             <div class="selo-v1" title="Você está no SDumont Expansão (v1), não no 2nd">
                 🟦 SDumont Expansão (v1)
             </div>
-            <nav id="progresso" class="progresso" aria-label="Progresso do tour">
-                <div style="color: var(--text-dim); font-size: 13px; padding: 0 12px;">
-                    Simulador mínimo — dashboard + terminal funcionais. Narrator/tour vem depois.
-                </div>
-            </nav>
+            <nav id="progresso" class="progresso" aria-label="Progresso do tour"></nav>
             <div class="cards-fixos">
                 <button id="btn-help" title="Ajuda">❓</button>
             </div>
         </header>
 
-        <aside id="narrador" class="narrador" aria-live="polite">
-            <h2 style="color: var(--accent-alt); margin-bottom: 16px;">Como usar agora</h2>
-            <ol style="line-height: 1.8; padding-left: 20px;">
-                <li>Olha o dashboard à direita: são os <strong>377 nós</strong> do SDumont v1, agrupados por tipo (CPU, BIGMEM, GPU, GDL). Cores: verde=livre, amarelo=parcial, vermelho=cheio.</li>
-                <li>Abaixo do grid, a <strong>fila de jobs</strong> mostra outros usuários fictícios rodando workloads reais do LNCC (GROMACS, PyTorch, OpenFOAM, etc).</li>
-                <li>No terminal (canto inferior direito), você começa na "sua máquina local". Digite <code>ssh unseen@sdumont15</code> para entrar no cluster.</li>
-                <li>Depois do SSH, tente: <code>ls</code>, <code>cat train_palmvein.srm</code>, <code>module avail</code>, <code>squeue</code>, <code>sinfo</code>, <code>sbatch train_palmvein.srm</code>, <code>squeue --me</code>.</li>
-                <li>Veja o job aparecer na fila à direita e o nó ficar vermelho quando ele começar a rodar.</li>
-            </ol>
-            <h3 style="color: var(--accent); margin: 24px 0 8px 0;">Comandos principais</h3>
-            <ul style="line-height: 1.7; font-size: 13px; padding-left: 20px;">
-                <li><code>ls</code>, <code>cd</code>, <code>pwd</code>, <code>cat &lt;arquivo&gt;</code></li>
-                <li><code>ssh unseen@sdumont15</code>, <code>exit</code></li>
-                <li><code>module avail</code>, <code>module load cuda/11.2_sequana</code></li>
-                <li><code>sbatch &lt;script.srm&gt;</code></li>
-                <li><code>squeue</code>, <code>squeue --me</code></li>
-                <li><code>sinfo</code>, <code>sinfo -p gdl</code></li>
-                <li><code>scancel &lt;JOBID&gt;</code></li>
-                <li><code>nvidia-smi</code> (só quando em nó GPU)</li>
-                <li><code>help</code> — lista tudo</li>
-            </ul>
-            <p style="color: var(--text-dim); font-size: 12px; margin-top: 16px;">
-                Cluster avança a cada 2s. Outros usuários submetem jobs automaticamente.
-            </p>
-        </aside>
+        <aside id="narrador" class="narrador" aria-live="polite"></aside>
 
         <section id="dashboard" class="dashboard" aria-label="Dashboard do cluster"></section>
         <section id="terminal" class="terminal" aria-label="Terminal simulado"></section>

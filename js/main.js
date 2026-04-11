@@ -8,6 +8,8 @@ import { seedFictionalJobs } from './users.js';
 import { mountDashboard } from './ui/dashboard.js';
 import { dispatch } from './commands/index.js';
 import { tokenize } from './commands/parser.js';
+import { mountNarrator } from './narrator.js';
+import { mountProgress } from './progress.js';
 
 // Self-registering command modules
 import './commands/fs.js';
@@ -42,6 +44,27 @@ mountDashboard({
     cluster, state,
     container: document.getElementById('dashboard'),
     getCurrentUser: () => ctx.currentUser
+});
+
+// ---------- Progress stepper ----------
+const progressHandle = mountProgress(
+    document.getElementById('progresso'),
+    state,
+    (etapa) => {
+        // Clique em etapa concluída ou atual: pula pro primeiro passo dela
+        if (state.etapasConcluidas.includes(etapa) || etapa === state.etapaAtual) {
+            narratorHandle.narrator.jumpToEtapa(etapa);
+            narratorHandle.render();
+            progressHandle.render();
+        }
+    }
+);
+
+// ---------- Narrator ----------
+const narratorHandle = mountNarrator({
+    container: document.getElementById('narrador'),
+    state,
+    onChange: () => progressHandle.render()
 });
 
 // ---------- Terminal mounting ----------
@@ -119,6 +142,9 @@ function executeCommand(rawLine) {
 
     refreshPrompt();
     renderTerminal();
+
+    // Notifica o narrator pra que `esperaComando` possa liberar o Próximo
+    narratorHandle.notifyCommand(rawLine);
 }
 
 termInput.addEventListener('keydown', (e) => {
