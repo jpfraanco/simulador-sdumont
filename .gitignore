@@ -1,0 +1,24 @@
+# Research materials (source, not published, potentially copyrighted)
+research/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor cruft
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs and temp
+*.log
+*.tmp
+.cache/
+
+# Never these
+node_modules/
+dist/
+build/
