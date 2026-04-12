@@ -333,6 +333,83 @@ code { background: var(--surface-alt); padding: 1px 6px; border-radius: 3px; fon
 .btn-back:disabled, .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-back:hover:not(:disabled), .btn-next:hover:not(:disabled) { filter: brightness(1.15); }
 
+/* Glossary tooltips */
+.term {
+    color: var(--accent-alt); border-bottom: 1px dashed var(--accent-alt);
+    cursor: help; position: relative;
+}
+.term:hover::after {
+    content: attr(data-tooltip);
+    position: absolute; top: 100%; left: 0;
+    background: var(--surface); color: var(--text);
+    padding: 8px 12px; border-radius: 4px;
+    border: 1px solid var(--accent-alt); font-size: 12px;
+    max-width: 320px; width: max-content; white-space: normal;
+    z-index: 100; margin-top: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5); line-height: 1.4;
+}
+
+/* Modals */
+.modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal-window {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    min-width: 480px; max-width: 640px; max-height: 85vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+}
+.modal-window.wide { max-width: 900px; width: 90vw; }
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: var(--sp-md); border-bottom: 1px solid var(--border);
+}
+.modal-header h3 { color: var(--accent-alt); margin: 0; }
+.modal-close { font-size: 18px; padding: 4px 8px; color: var(--text-dim); }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: var(--sp-md); overflow-y: auto; flex: 1; }
+.modal-subtitle { color: var(--text-dim); margin-bottom: var(--sp-md); }
+.guardian-list {
+    background: var(--surface-alt); border-left: 4px solid var(--accent-alt);
+    padding: 12px 12px 12px 36px; border-radius: 0 4px 4px 0; margin: 0 0 16px 0;
+}
+.guardian-list li { margin-bottom: 8px; }
+.comparison-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.comparison-table th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: var(--accent-alt); }
+.comparison-table td { padding: 8px; border-bottom: 1px solid var(--surface-alt); }
+.td-aspecto { font-weight: 600; color: var(--text-dim); white-space: nowrap; }
+.td-v1 { color: var(--accent); }
+.td-v2 { color: var(--text); }
+.glossary-list { display: flex; flex-direction: column; gap: 8px; }
+.glossary-entry {
+    display: grid; grid-template-columns: 140px 1fr 60px; gap: 8px; align-items: baseline;
+    padding: 6px 0; border-bottom: 1px solid var(--surface-alt);
+}
+.glossary-entry strong { color: var(--accent-alt); font-size: 13px; }
+.glossary-def { color: var(--text); font-size: 13px; }
+.glossary-etapa { color: var(--text-dim); font-size: 11px; text-align: right; }
+.halo-target {
+    position: relative;
+    box-shadow: 0 0 0 3px var(--accent-alt), 0 0 20px 6px rgba(88,166,255,0.4);
+    animation: halo-pulse 1.5s ease-in-out infinite;
+    border-radius: 6px;
+}
+@keyframes halo-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px var(--accent-alt), 0 0 20px 6px rgba(88,166,255,0.4); }
+    50%      { box-shadow: 0 0 0 3px var(--accent-alt), 0 0 28px 12px rgba(88,166,255,0.6); }
+}
+.sandbox-cheatsheet h2 { color: var(--accent-alt); margin-bottom: 12px; }
+.sandbox-cheatsheet h4 { color: var(--accent); margin: var(--sp-md) 0 var(--sp-sm); }
+.cheat-table { border-collapse: collapse; width: 100%; font-size: 13px; margin-bottom: var(--sp-md); }
+.cheat-table td { padding: 4px 12px; border-bottom: 1px solid var(--surface-alt); }
+.cheat-table td:first-child { font-family: var(--font-mono); color: var(--accent); }
+.btn-voltar-tour {
+    margin-top: var(--sp-md); padding: 8px 16px; background: var(--surface-alt);
+    border: 1px solid var(--border); border-radius: 4px; font-weight: 600;
+}
+.btn-voltar-tour:hover { filter: brightness(1.15); }
+
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;

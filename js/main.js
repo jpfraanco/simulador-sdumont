@@ -10,6 +10,11 @@ import { dispatch } from './commands/index.js';
 import { tokenize } from './commands/parser.js';
 import { mountNarrator } from './narrator.js';
 import { mountProgress } from './progress.js';
+import { hydrateTerms } from './glossario.js';
+import { highlight, clearHighlight } from './ui/highlight.js';
+import { showV1vs2ndModal } from './ui/v1-vs-2nd-modal.js';
+import { showGlossaryModal } from './ui/glossary-modal.js';
+import { renderSandboxCheatsheet } from './ui/sandbox.js';
 
 // Self-registering command modules
 import './commands/fs.js';
@@ -179,11 +184,60 @@ document.addEventListener('click', (e) => {
 });
 termInput.focus();
 
-// Help button → run help
+// ---------- Modals & buttons ----------
+document.querySelector('.selo-v1')?.addEventListener('click', showV1vs2ndModal);
+document.getElementById('btn-v1v2')?.addEventListener('click', showV1vs2ndModal);
+document.getElementById('btn-glossario')?.addEventListener('click', showGlossaryModal);
 document.getElementById('btn-help')?.addEventListener('click', () => {
     executeCommand('help');
     termInput.focus();
 });
 
+// Glossary hydration: after each narrator render, wrap known terms with tooltips
+const origNarratorRender = narratorHandle.render;
+narratorHandle.render = function () {
+    origNarratorRender();
+    // Hydrate terms
+    const corpo = document.querySelector('.narrator-corpo');
+    if (corpo) corpo.innerHTML = hydrateTerms(corpo.innerHTML);
+    // Apply highlight
+    const step = narratorHandle.narrator.currentStep();
+    clearHighlight();
+    if (step && step.destaque) highlight(step.destaque);
+};
+narratorHandle.render(); // re-render once to apply hydration on first load
+
+// Sandbox chip click
+let inSandbox = false;
+const sandboxBtn = document.createElement('button');
+sandboxBtn.id = 'btn-sandbox';
+sandboxBtn.title = 'Sandbox';
+sandboxBtn.textContent = '🏖️';
+sandboxBtn.disabled = !state.sandboxDesbloqueado;
+document.querySelector('.cards-fixos')?.prepend(sandboxBtn);
+
+sandboxBtn.addEventListener('click', () => {
+    if (!state.sandboxDesbloqueado) return;
+    inSandbox = !inSandbox;
+    const narratorEl = document.getElementById('narrador');
+    if (inSandbox) {
+        narratorEl.innerHTML = renderSandboxCheatsheet();
+        narratorEl.querySelector('.btn-voltar-tour')?.addEventListener('click', () => {
+            inSandbox = false;
+            narratorHandle.render();
+        });
+    } else {
+        narratorHandle.render();
+    }
+});
+
+// Refresh sandbox button state when narrator changes
+const origOnChange = narratorHandle.narrator.advance.bind(narratorHandle.narrator);
+// Monitor sandbox unlock on every narrator render
+const renderObserver = new MutationObserver(() => {
+    sandboxBtn.disabled = !state.sandboxDesbloqueado;
+});
+renderObserver.observe(document.getElementById('narrador'), { childList: true });
+
 // Expose ctx for debugging
-window.__sim = { ctx, cluster, filesystem, terminal, state };
+window.__sim = { ctx, cluster, filesystem, terminal, state, narratorHandle };

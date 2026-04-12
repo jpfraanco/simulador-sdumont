@@ -220,6 +220,98 @@
         .btn-next:not(:disabled) { background: #3fb950; color: #0b0f14; border-color: #3fb950; }
         .btn-back:disabled, .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-back:hover:not(:disabled), .btn-next:hover:not(:disabled) { filter: brightness(1.15); }
+
+        /* Glossary tooltips */
+        .term {
+            color: #58a6ff; border-bottom: 1px dashed #58a6ff; cursor: help; position: relative;
+        }
+        .term:hover::after {
+            content: attr(data-tooltip);
+            position: absolute; top: 100%; left: 0;
+            background: #151b23; color: #e6edf3;
+            padding: 8px 12px; border-radius: 4px;
+            border: 1px solid #58a6ff; font-size: 12px;
+            max-width: 320px; width: max-content;
+            white-space: normal; z-index: 100; margin-top: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            line-height: 1.4;
+        }
+
+        /* Modals */
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-window {
+            background: #151b23; border: 1px solid #2a3340; border-radius: 8px;
+            min-width: 480px; max-width: 640px; max-height: 85vh;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+        }
+        .modal-window.wide { max-width: 900px; width: 90vw; }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px; border-bottom: 1px solid #2a3340;
+        }
+        .modal-header h3 { color: #58a6ff; margin: 0; }
+        .modal-close { font-size: 18px; padding: 4px 8px; color: #8b949e; }
+        .modal-close:hover { color: #e6edf3; }
+        .modal-body { padding: 16px; overflow-y: auto; flex: 1; color: #e6edf3; }
+        .modal-subtitle { color: #8b949e; margin-bottom: 16px; }
+        .guardian-list {
+            background: #1d252f; border-left: 4px solid #58a6ff;
+            padding: 12px 12px 12px 36px; border-radius: 0 4px 4px 0;
+            margin: 0 0 16px 0; list-style-position: outside;
+        }
+        .guardian-list li { margin-bottom: 8px; }
+        .comparison-table {
+            width: 100%; border-collapse: collapse; font-size: 13px;
+        }
+        .comparison-table th {
+            text-align: left; padding: 8px; border-bottom: 2px solid #2a3340; color: #58a6ff;
+        }
+        .comparison-table td { padding: 8px; border-bottom: 1px solid #1d252f; }
+        .td-aspecto { font-weight: 600; color: #8b949e; white-space: nowrap; }
+        .td-v1 { color: #3fb950; }
+        .td-v2 { color: #e6edf3; }
+
+        /* Glossary modal */
+        .glossary-list { display: flex; flex-direction: column; gap: 8px; }
+        .glossary-entry {
+            display: grid; grid-template-columns: 140px 1fr 60px; gap: 8px; align-items: baseline;
+            padding: 6px 0; border-bottom: 1px solid #1d252f;
+        }
+        .glossary-entry strong { color: #58a6ff; font-size: 13px; }
+        .glossary-def { color: #e6edf3; font-size: 13px; }
+        .glossary-etapa { color: #8b949e; font-size: 11px; text-align: right; }
+
+        /* Highlight halo */
+        .halo-target {
+            position: relative;
+            box-shadow: 0 0 0 3px #58a6ff, 0 0 20px 6px rgba(88,166,255,0.4);
+            animation: halo-pulse 1.5s ease-in-out infinite;
+            border-radius: 6px;
+        }
+        @keyframes halo-pulse {
+            0%, 100% { box-shadow: 0 0 0 3px #58a6ff, 0 0 20px 6px rgba(88,166,255,0.4); }
+            50%      { box-shadow: 0 0 0 3px #58a6ff, 0 0 28px 12px rgba(88,166,255,0.6); }
+        }
+
+        /* Sandbox cheatsheet */
+        .sandbox-cheatsheet h2 { color: #58a6ff; margin-bottom: 12px; }
+        .sandbox-cheatsheet h4 { color: #3fb950; margin: 16px 0 8px; }
+        .sandbox-cheatsheet p { margin-bottom: 12px; }
+        .cheat-table { border-collapse: collapse; width: 100%; font-size: 13px; margin-bottom: 16px; }
+        .cheat-table td { padding: 4px 12px; border-bottom: 1px solid #1d252f; }
+        .cheat-table td:first-child { font-family: "JetBrains Mono", Consolas, monospace; color: #3fb950; }
+        .btn-voltar-tour {
+            margin-top: 16px; padding: 8px 16px; background: #1d252f;
+            border: 1px solid #2a3340; border-radius: 4px; color: #e6edf3;
+            font-weight: 600; cursor: pointer;
+        }
+        .btn-voltar-tour:hover { filter: brightness(1.15); }
+
+        @media (prefers-reduced-motion: reduce) { .halo-target { animation: none; } }
     </style>
 </head>
 <body>
@@ -230,6 +322,8 @@
             </div>
             <nav id="progresso" class="progresso" aria-label="Progresso do tour"></nav>
             <div class="cards-fixos">
+                <button id="btn-glossario" title="Glossário">📘</button>
+                <button id="btn-v1v2" title="SDumont v1 vs 2nd">🔀</button>
                 <button id="btn-help" title="Ajuda">❓</button>
             </div>
         </header>

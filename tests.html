@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador SDumont — Tests</title>
+    <style>
+        body { background: #0b0f14; color: #e6edf3; font-family: "JetBrains Mono", Consolas, monospace; padding: 24px; }
+        h1 { color: #58a6ff; margin-bottom: 16px; }
+        .summary { padding: 12px; margin: 16px 0; border-radius: 4px; font-weight: bold; font-size: 18px; }
+        .summary.pass { background: #1a3a1f; color: #3fb950; }
+        .summary.fail { background: #3a1f1f; color: #f85149; }
+        .test-line { padding: 4px 8px; margin: 2px 0; border-left: 3px solid transparent; white-space: pre-wrap; font-size: 13px; }
+        .test-line.pass { border-color: #3fb950; color: #8dd4a1; }
+        .test-line.fail { border-color: #f85149; color: #f5a89a; background: #2a0f0f; }
+    </style>
+</head>
+<body>
+    <h1>Simulador SDumont — Test Suite</h1>
+    <div id="test-summary" class="summary">running...</div>
+    <div id="test-root"></div>
+
+    <script type="module">
+        import './tests/cluster.test.js';
+        import './tests/filesystem.test.js';
+        import './tests/commands.test.js';
+        import { run } from './js/test-harness.js';
+        run();
+    </script>
+</body>
+</html>
