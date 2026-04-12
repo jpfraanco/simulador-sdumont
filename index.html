@@ -312,6 +312,85 @@
         .btn-voltar-tour:hover { filter: brightness(1.15); }
 
         @media (prefers-reduced-motion: reduce) { .halo-target { animation: none; } }
+
+        /* ==================== USER SELECTION SCREEN ==================== */
+        #user-select-screen {
+            position: fixed; inset: 0; z-index: 2000;
+            background: #0b0f14;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-select-container {
+            max-width: 800px; width: 90vw;
+            text-align: center;
+        }
+        .user-select-header { margin-bottom: 40px; }
+        .user-select-selo {
+            display: inline-block;
+            font-weight: 600; color: #58a6ff;
+            padding: 6px 14px; background: #1d252f;
+            border-radius: 4px; font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .user-select-header h1 {
+            color: #e6edf3; font-size: 28px; font-weight: 700;
+            margin: 12px 0;
+        }
+        .user-select-header p {
+            color: #8b949e; font-size: 16px; line-height: 1.5;
+        }
+        .user-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .user-card {
+            background: #151b23; border: 2px solid #2a3340;
+            border-radius: 12px; padding: 24px 16px;
+            cursor: pointer; transition: border-color 0.2s, transform 0.15s;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .user-card:hover {
+            border-color: #58a6ff; transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(88,166,255,0.15);
+        }
+        .user-emoji { font-size: 48px; line-height: 1; }
+        .user-name { font-size: 20px; font-weight: 700; color: #e6edf3; }
+        .user-progress-info {
+            width: 100%; margin-top: 8px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .user-progress-bar {
+            width: 100%; height: 6px; background: #2a3340;
+            border-radius: 3px; overflow: hidden;
+        }
+        .user-progress-fill {
+            height: 100%; background: #3fb950;
+            border-radius: 3px; transition: width 0.3s;
+        }
+        .user-progress-text { font-size: 12px; color: #8b949e; }
+        .user-progress-text.new { color: #58a6ff; font-style: italic; }
+        .user-reset-btn {
+            margin-top: 8px; padding: 4px 10px;
+            background: transparent; border: 1px solid #f85149;
+            border-radius: 4px; color: #f85149; font-size: 11px;
+            cursor: pointer; opacity: 0.6; transition: opacity 0.2s;
+        }
+        .user-reset-btn:hover { opacity: 1; background: rgba(248,81,73,0.1); }
+        .user-select-footer {
+            color: #6e7681; font-size: 12px; margin-top: 8px;
+        }
+
+        @media (max-width: 700px) {
+            .user-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* ==================== NARRATOR FONT SIZE INCREASE ==================== */
+        .narrator-corpo { font-size: 16px !important; line-height: 1.7 !important; }
+        .narrator-corpo li { font-size: 16px; }
+        .narrator-corpo code { font-size: 14px; }
+        .narrator-titulo { font-size: 20px !important; }
+        .narrator-breadcrumb { font-size: 13px; }
     </style>
 </head>
 <body>
@@ -325,6 +404,7 @@
                 <button id="btn-glossario" title="Glossário">📘</button>
                 <button id="btn-v1v2" title="SDumont v1 vs 2nd">🔀</button>
                 <button id="btn-help" title="Ajuda">❓</button>
+                <button id="btn-switch-user" title="Trocar usuário">👤</button>
             </div>
         </header>
 
