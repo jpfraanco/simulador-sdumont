@@ -47,7 +47,7 @@ test('scheduleQueue promotes PD to R when resources available', () => {
     c.submitJob({ user: 'u', partition: 'gdl', nodes: 1, gpus: 8, cpus: 40, memGB: 384, walltimeSec: 3600, name: 't', script: '/t.srm' });
     c.scheduleQueue();
     assertEqual(c.jobs[0].state, 'R');
-    assertEqual(c.getNode('sdumont8000').state, 'alloc');
+    assertEqual(c.getNode('sdumont4000').state, 'alloc');
 });
 
 test('second gdl job stays PD with Resources reason', () => {
@@ -93,7 +93,7 @@ test('cancelJob sets CA and releases resources', () => {
     c.scheduleQueue();
     c.cancelJob(id, 'u');
     assertEqual(c.jobs[0].state, 'CA');
-    assertEqual(c.getNode('sdumont8000').gpusAllocated, 0);
+    assertEqual(c.getNode('sdumont4000').gpusAllocated, 0);
 });
 
 test('cancelJob refuses wrong user', () => {

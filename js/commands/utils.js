@@ -5,7 +5,7 @@ register({
     name: 'nvidia-smi',
     help: 'Estado das GPUs no nó atual',
     run: (args, ctx) => {
-        if (ctx.hostname === 'sdumont8000') {
+        if (ctx.hostname === 'sdumont4000') {
             const lines = [
                 '+-----------------------------------------------------------------------------+',
                 '| NVIDIA-SMI 470.57.02    Driver Version: 470.57.02    CUDA Version: 11.4     |',

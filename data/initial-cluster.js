@@ -30,13 +30,18 @@ export const LOGIN_NODES = [
 
 export function makeInitialCluster() {
     const nodes = [];
-    let i = 1000;
+    // Real node ranges from SD01I slide (sinfo output):
+    // BIGMEM: sdumont6018-6035 (18 entries, 36 nodes — 2 nodes per blade? or some down)
+    // CPU: sdumont6068-6287 (220 entries, covers 246 nodes — some gaps for maintenance)
+    // GPU: sdumont8029-8095 (67 entries — some gaps, 94 nodes active across range)
+    // GDL: sdumont4000 (single DL node)
+    let i = 6068;
     for (let k = 0; k < NODE_COUNTS.cpu; k++) nodes.push(makeNode(`sdumont${i++}`, 'cpu'));
-    i = 2000;
+    i = 6018;
     for (let k = 0; k < NODE_COUNTS.bigmem; k++) nodes.push(makeNode(`sdumont${i++}`, 'bigmem'));
-    i = 6000;
+    i = 8029;
     for (let k = 0; k < NODE_COUNTS.gpu; k++) nodes.push(makeNode(`sdumont${i++}`, 'gpu'));
-    nodes.push(makeNode('sdumont8000', 'gdl'));
+    nodes.push(makeNode('sdumont4000', 'gdl'));
     return { nodes, partitions: PARTITIONS, loginNodes: LOGIN_NODES, jobs: [], nextJobId: 12000 };
 }
 

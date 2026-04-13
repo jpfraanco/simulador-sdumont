@@ -235,7 +235,7 @@ export const STEPS = [
             </ul>
             <p>Pra ativar: <code>module load cuda/11.2_sequana</code>. Experimenta agora.</p>
             <p>Depois, confirma que deu certo com <code>module list</code>.</p>
-            <p>Nota importante: <strong>o v1 NÃO suporta</strong> <code>module purge</code> nem <code>module spider</code>. Esses só funcionam no 2nd. Se você tentar, dá erro. Use <code>module unload &lt;nome&gt;</code> pra descarregar.</p>
+            <p>Nota: o v1 <strong>NÃO suporta <code>module purge</code></strong> (dá erro — use <code>module unload &lt;nome&gt;</code> pra descarregar). Porém <code>module spider</code> funciona: experimente <code>module spider gcc</code> pra buscar módulos por nome.</p>
         `,
         destaque: '#terminal',
         esperaComando: /^module\s+load\s+cuda/

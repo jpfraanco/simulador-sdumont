@@ -135,7 +135,7 @@ test('nodeset -e expands range', () => {
 });
 
 test('nvidia-smi on gdl node shows V100', () => {
-    const r = dispatch(['nvidia-smi'], ctx('sdumont8000'));
+    const r = dispatch(['nvidia-smi'], ctx('sdumont4000'));
     assertContains(r.stdout, 'V100');
 });
 
