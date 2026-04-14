@@ -15,7 +15,15 @@ import { highlight, clearHighlight } from './ui/highlight.js';
 import { showV1vs2ndModal } from './ui/v1-vs-2nd-modal.js';
 import { showGlossaryModal } from './ui/glossary-modal.js';
 import { renderSandboxCheatsheet } from './ui/sandbox.js';
-import { ETAPAS } from '../data/tour.js';
+import { MODULES } from '../data/modules-index.js';
+import * as tourSdumont from '../data/tour.js';
+import * as tourOpenmp from '../data/tour-openmp.js';
+import { OPENMP_FILES } from '../data/openmp-files.js';
+
+const TOUR_MODULES = {
+    sdumont: tourSdumont,
+    openmp: tourOpenmp
+};
 
 // Self-registering command modules
 import './commands/fs.js';
@@ -23,12 +31,15 @@ import './commands/ssh.js';
 import './commands/modules.js';
 import './commands/slurm.js';
 import './commands/utils.js';
+import './commands/compile.js';
 
 console.log('[simulador-sdumont] booting...');
 
 // =====================================================================
 // USER SELECTION SCREEN
 // =====================================================================
+
+let selectedModuleId = 'sdumont'; // default
 
 function renderUserSelection() {
     const app = document.getElementById('app');
@@ -39,16 +50,34 @@ function renderUserSelection() {
     screen.innerHTML = `
         <div class="user-select-container">
             <div class="user-select-header">
-                <span class="user-select-selo">🟦 SDumont Expansão (v1)</span>
-                <h1>Simulador Educativo do Santos Dumont</h1>
-                <p>Escolha quem é você para começar (ou continuar) o tour. Cada pessoa tem seu próprio progresso salvo.</p>
+                <span class="user-select-selo">🟦 SDumont — Simulador Educativo</span>
+                <h1>Escola Supercomputador Santos Dumont</h1>
+                <p>Escolha o módulo e depois quem você é.</p>
             </div>
+
+            <h2 style="color:#58a6ff; margin: 24px 0 16px; font-size:20px;">📚 Módulos de aprendizado</h2>
+            <div class="module-cards">
+                ${MODULES.map(m => {
+                    const active = m.id === selectedModuleId;
+                    const disabled = m.comingSoon;
+                    return `
+                        <div class="module-card ${active ? 'active' : ''} ${disabled ? 'coming-soon' : ''}" data-module="${m.id}">
+                            <div class="module-num">${m.num}</div>
+                            <div class="module-info">
+                                <div class="module-emoji">${m.emoji}</div>
+                                <div class="module-titulo">${m.titulo}</div>
+                                <div class="module-sub">${m.subtitulo}</div>
+                                ${disabled ? '<span class="module-badge">em breve</span>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+
+            <h2 style="color:#3fb950; margin: 32px 0 16px; font-size:20px;">👤 Quem é você?</h2>
             <div class="user-cards">
                 ${USERS.map(u => {
                     const progress = getUserProgress(u.id);
-                    const etapaDone = progress ? progress.etapasConcluidas.length : 0;
-                    const etapaAtual = progress ? progress.etapaAtual : 0;
-                    const pct = Math.round((etapaDone / ETAPAS.length) * 100);
                     const hasProgress = progress !== null;
                     return `
                         <div class="user-card" data-user="${u.id}">
@@ -56,28 +85,35 @@ function renderUserSelection() {
                             <div class="user-name">${u.nome}</div>
                             <div class="user-progress-info">
                                 ${hasProgress
-                                    ? `<div class="user-progress-bar"><div class="user-progress-fill" style="width:${pct}%"></div></div>
-                                       <span class="user-progress-text">${etapaDone}/${ETAPAS.length} etapas (${pct}%)</span>`
-                                    : `<span class="user-progress-text new">Novo — sem progresso</span>`}
+                                    ? `<span class="user-progress-text">tem progresso salvo</span>`
+                                    : `<span class="user-progress-text new">Novo</span>`}
                             </div>
-                            ${hasProgress ? `<button class="user-reset-btn" data-reset="${u.id}" title="Resetar progresso de ${u.nome}">🔁 Resetar</button>` : ''}
+                            ${hasProgress ? `<button class="user-reset-btn" data-reset="${u.id}" title="Resetar progresso de ${u.nome}">🔁</button>` : ''}
                         </div>
                     `;
                 }).join('')}
             </div>
-            <p class="user-select-footer">O progresso é salvo no navegador (localStorage). Se limpar os dados do browser, perde o progresso.</p>
+            <p class="user-select-footer">Progresso salvo no navegador (localStorage) por pessoa e por módulo.</p>
         </div>
     `;
     document.body.appendChild(screen);
 
-    // Card clicks → select user
+    // Module card clicks
+    screen.querySelectorAll('.module-card:not(.coming-soon)').forEach(card => {
+        card.addEventListener('click', () => {
+            selectedModuleId = card.dataset.module;
+            screen.querySelectorAll('.module-card').forEach(c => c.classList.toggle('active', c.dataset.module === selectedModuleId));
+        });
+    });
+
+    // User card clicks → save selection, reload to boot clean
     screen.querySelectorAll('.user-card').forEach(card => {
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.user-reset-btn')) return; // don't select if clicking reset
+            if (e.target.closest('.user-reset-btn')) return;
             const userId = card.dataset.user;
             setActiveUser(userId);
-            screen.remove();
-            bootSimulator(userId);
+            localStorage.setItem('simulador-sdumont:active-module', selectedModuleId);
+            location.reload();
         });
     });
 
@@ -90,7 +126,7 @@ function renderUserSelection() {
             if (confirm(`Tem certeza que quer apagar todo o progresso de ${user.nome}?`)) {
                 resetUserProgress(userId);
                 screen.remove();
-                renderUserSelection(); // re-render
+                renderUserSelection();
             }
         });
     });
@@ -100,19 +136,38 @@ function renderUserSelection() {
 // BOOT SIMULATOR
 // =====================================================================
 
-function bootSimulator(userId) {
+function bootSimulator(userId, moduleId = 'sdumont') {
     const app = document.getElementById('app');
     app.style.display = '';
 
     const userName = USERS.find(u => u.id === userId)?.nome || userId;
+    const moduleName = MODULES.find(m => m.id === moduleId)?.titulo || moduleId;
+    const tourData = TOUR_MODULES[moduleId] || tourSdumont;
 
     const state = createState(userId);
+    state.activeModule = moduleId;
     const cluster = createCluster();
     const filesystem = createFilesystem();
     const terminal = createTerminal();
 
     seedFictionalJobs(cluster);
     cluster.scheduleQueue();
+
+    // Load OpenMP fake files into filesystem
+    if (moduleId === 'openmp' || true) { // always load so files are available
+        for (const [path, content] of Object.entries(OPENMP_FILES)) {
+            try {
+                // Ensure parent dirs exist
+                const parts = path.split('/').filter(Boolean);
+                let dir = '/';
+                for (let i = 0; i < parts.length - 1; i++) {
+                    dir += (dir === '/' ? '' : '/') + parts[i];
+                    try { filesystem.mkdir(dir); } catch (e) {}
+                }
+                filesystem.write(path, content);
+            } catch (e) {}
+        }
+    }
 
     const ctx = {
         cluster, filesystem, terminal, state,
@@ -131,6 +186,7 @@ function bootSimulator(userId) {
     const progressHandle = mountProgress(
         document.getElementById('progresso'),
         state,
+        tourData.ETAPAS,
         (etapa) => {
             if (state.etapasConcluidas.includes(etapa) || etapa === state.etapaAtual) {
                 narratorHandle.narrator.jumpToEtapa(etapa);
@@ -144,6 +200,7 @@ function bootSimulator(userId) {
     const narratorHandle = mountNarrator({
         container: document.getElementById('narrador'),
         state,
+        tourData,
         onChange: () => progressHandle.render()
     });
 
@@ -246,6 +303,7 @@ function bootSimulator(userId) {
 
     refreshPrompt();
     terminal.appendOutput(`Simulador SDumont — ${userName}, bem-vindo(a)!`);
+    terminal.appendOutput(`Módulo: ${moduleName}`);
     terminal.appendOutput('Para entrar no cluster:  ssh unseen@sdumont15');
     terminal.appendOutput('Para listar comandos:    help');
     terminal.appendOutput('');
@@ -272,12 +330,8 @@ function bootSimulator(userId) {
     if (switchBtn) {
         switchBtn.addEventListener('click', () => {
             clearActiveUser();
-            dashboardHandle.stop();
-            app.style.display = 'none';
-            document.getElementById('narrador').innerHTML = '';
-            document.getElementById('progresso').innerHTML = '';
-            termEl.innerHTML = '';
-            renderUserSelection();
+            localStorage.removeItem('simulador-sdumont:active-module');
+            location.reload();
         });
     }
 
@@ -329,9 +383,11 @@ function bootSimulator(userId) {
 // ENTRY: check if user already selected, else show selection screen
 // =====================================================================
 
+// Check if user + module already selected (from previous selection)
 const activeUser = getActiveUser();
-if (activeUser && USERS.find(u => u.id === activeUser)) {
-    bootSimulator(activeUser);
+const activeModule = localStorage.getItem('simulador-sdumont:active-module');
+if (activeUser && USERS.find(u => u.id === activeUser) && activeModule && TOUR_MODULES[activeModule]) {
+    bootSimulator(activeUser, activeModule);
 } else {
     renderUserSelection();
 }

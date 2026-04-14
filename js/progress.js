@@ -1,9 +1,8 @@
 // js/progress.js
-// Barra de progresso superior com 9 etapas + sandbox chip.
-import { ETAPAS } from '../data/tour.js';
+// Barra de progresso — aceita etapas dinâmicas (suporta múltiplos módulos).
 
-export function renderProgress(state) {
-    const chips = ETAPAS.map(e => {
+export function renderProgress(state, etapas) {
+    const chips = etapas.map(e => {
         let cls = 'step';
         const done = state.etapasConcluidas.includes(e.num);
         if (done) cls += ' done';
@@ -23,8 +22,8 @@ export function renderProgress(state) {
     return `<div class="progresso-track">${chips}${sandbox}</div>`;
 }
 
-export function mountProgress(container, state, onStepClick) {
-    function render() { container.innerHTML = renderProgress(state); bind(); }
+export function mountProgress(container, state, etapas, onStepClick) {
+    function render() { container.innerHTML = renderProgress(state, etapas); bind(); }
     function bind() {
         container.querySelectorAll('[data-etapa]').forEach(btn => {
             btn.addEventListener('click', () => {
