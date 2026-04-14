@@ -313,6 +313,23 @@
 
         @media (prefers-reduced-motion: reduce) { .halo-target { animation: none; } }
 
+        /* Speed control */
+        .speed-control {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 12px; padding: 8px 12px;
+            background: #151b23; border: 1px solid #2a3340; border-radius: 6px;
+        }
+        .speed-btn {
+            padding: 6px 14px; border-radius: 4px;
+            background: #1d252f; border: 1px solid #2a3340;
+            color: #8b949e; font-weight: 600; font-size: 14px;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .speed-btn.active { background: #58a6ff; color: #0b0f14; border-color: #58a6ff; }
+        .speed-btn:hover { filter: brightness(1.2); }
+        .speed-hint { color: #6e7681; font-size: 12px; }
+        .node-summary { font-weight: 400; color: #6e7681; font-size: 11px; margin-left: 8px; }
+
         /* ==================== USER SELECTION SCREEN ==================== */
         #user-select-screen {
             position: fixed; inset: 0; z-index: 2000;

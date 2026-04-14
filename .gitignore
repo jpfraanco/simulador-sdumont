@@ -22,3 +22,8 @@ desktop.ini
 node_modules/
 dist/
 build/
+
+# Build artifacts
+simulador-sdumont-dist/
+simulador-sdumont-dist.zip
+*.zip
