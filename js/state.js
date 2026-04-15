@@ -11,7 +11,7 @@ export const USERS = [
 ];
 
 function storageKey(userId) {
-    return `simulador-sdumont:state:v1:${userId}`;
+    return `simulador-sdumont:state:2nd:${userId}`;
 }
 
 const DEFAULT_STATE = {

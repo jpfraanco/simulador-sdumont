@@ -3,7 +3,7 @@
 // Loaded into the simulated filesystem at boot.
 
 export const OPENMP_FILES = {
-    '/prj/palmvein/unseen/openmp/hello.c': `#include <stdio.h>
+    '/scratch/palmvein/unseen/openmp/hello.c': `#include <stdio.h>
 #include <omp.h>
 
 int main() {
@@ -18,7 +18,7 @@ int main() {
 }
 `,
 
-    '/prj/palmvein/unseen/openmp/palm_preprocess.c': `#include <stdio.h>
+    '/scratch/palmvein/unseen/openmp/palm_preprocess.c': `#include <stdio.h>
 #include <omp.h>
 
 // Simula pré-processamento de imagem IR de veia palmar:
@@ -46,7 +46,7 @@ int main() {
 }
 `,
 
-    '/prj/palmvein/unseen/openmp/race_bug.c': `#include <stdio.h>
+    '/scratch/palmvein/unseen/openmp/race_bug.c': `#include <stdio.h>
 #include <omp.h>
 
 // BUG: race condition no cálculo de EER do palm vein
@@ -78,7 +78,7 @@ int main() {
 }
 `,
 
-    '/prj/palmvein/unseen/openmp/race_fixed.c': `#include <stdio.h>
+    '/scratch/palmvein/unseen/openmp/race_fixed.c': `#include <stdio.h>
 #include <omp.h>
 
 // CORRIGIDO: usa reduction pra evitar race condition
@@ -109,9 +109,10 @@ int main() {
 }
 `,
 
-    '/prj/palmvein/unseen/openmp/openmp_job.srm': `#!/bin/bash
+    '/scratch/palmvein/unseen/openmp/openmp_job.srm': `#!/bin/bash
 #SBATCH --job-name=palm-preprocess-omp
-#SBATCH -p sequana_cpu
+#SBATCH -p lncc-cpu_amd
+#SBATCH --account=palmvein
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -122,7 +123,8 @@ echo "Job OpenMP pré-processamento palm vein"
 echo "Nó: $SLURM_JOB_NODELIST"
 echo "Cores alocados: $SLURM_CPUS_PER_TASK"
 
-module load gcc/13.2_sequana
+module load arch_cpu_amd/current
+module load gcc/13.2
 
 cd $SLURM_SUBMIT_DIR
 

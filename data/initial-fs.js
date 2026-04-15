@@ -1,28 +1,28 @@
 // data/initial-fs.js
-// Initial FS tree for /prj/palmvein/unseen (HOME, login-only) and /scratch (all).
+// Initial FS tree for SDumont 2nd. $HOME == $SCRATCH == /scratch/palmvein/unseen.
 
 const TRAIN_SRM = `#!/bin/bash
 #SBATCH --job-name=palmvein-train
-#SBATCH -p gdl
+#SBATCH -p lncc-h100_shared
+#SBATCH --account=palmvein
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gpus=8
-#SBATCH --cpus-per-gpu=5
-#SBATCH --time=08:00:00
+#SBATCH --gpus=2
+#SBATCH --cpus-per-gpu=24
+#SBATCH --time=12:00:00
 #SBATCH --output=slurm-%j.out
 
-# SDumont v1 (Expansão) — palm vein biometrics training job.
+# SDumont 2nd — palm vein biometrics training job.
 
 echo "Job running on: $SLURM_JOB_NODELIST"
 nodeset -e $SLURM_JOB_NODELIST
 
 cd $SLURM_SUBMIT_DIR
 
-module load cuda/11.2_sequana
-module load anaconda3/2024.02_sequana
+module load arch_gpu/current
+module load anaconda3/2024.02
 source activate $SCRATCH/envs/palmvein
 
-srun torchrun --nproc_per_node=8 \\
+srun torchrun --nproc_per_node=2 \\
     code/train.py \\
     --data $SCRATCH/datasets/palm_vein \\
     --checkpoints $SCRATCH/checkpoints \\
@@ -178,16 +178,16 @@ scikit-learn
 tqdm
 `;
 
-const ENVS_README = `# Como criar o conda env no SDumont v1
+const ENVS_README = `# Como criar o conda env no SDumont 2nd
 
-**IMPORTANTE:** o conda env mora em \`$SCRATCH\`, não em \`$HOME\`.
-Porque compute nodes não enxergam \`/prj\` (onde \`$HOME\` fica no v1).
+**No 2nd:** $HOME == $SCRATCH (ambos em Lustre), visíveis em todos os nós.
 
 \`\`\`bash
-module load anaconda3/2024.02_sequana
+module load arch_gpu/current
+module load anaconda3/2024.02
 conda create --prefix $SCRATCH/envs/palmvein python=3.11 -y
 source activate $SCRATCH/envs/palmvein
-pip install -r /prj/palmvein/unseen/code/requirements.txt
+pip install -r $HOME/code/requirements.txt
 \`\`\`
 
 **Regra crítica:** NÃO deixe o conda env ativo quando rodar \`sbatch\`.
@@ -199,38 +199,28 @@ const DATASET_README = `Palm vein IR images
 Capturado internamente + CASIA-MS-PalmprintV1
 `;
 
+// SDumont 2nd: $HOME == $SCRATCH == /scratch/<PROJETO>/<user>
+// Everything in Lustre, visible on all nodes.
 export const INITIAL_FS = {
     '/': {
         type: 'dir', visibility: 'all', children: {
-            'prj': {
-                type: 'dir', visibility: 'login', children: {
-                    'palmvein': {
-                        type: 'dir', visibility: 'login', children: {
-                            'unseen': {
-                                type: 'dir', visibility: 'login', children: {
-                                    'README.md': { type: 'file', visibility: 'login', content: README_MD },
-                                    'code': {
-                                        type: 'dir', visibility: 'login', children: {
-                                            'train.py':        { type: 'file', visibility: 'login', content: TRAIN_PY },
-                                            'model.py':        { type: 'file', visibility: 'login', content: MODEL_PY },
-                                            'dataset.py':      { type: 'file', visibility: 'login', content: DATASET_PY },
-                                            'requirements.txt':{ type: 'file', visibility: 'login', content: REQUIREMENTS_TXT }
-                                        }
-                                    },
-                                    'train_palmvein.srm': { type: 'file', visibility: 'login', content: TRAIN_SRM },
-                                    'envs_readme.md':     { type: 'file', visibility: 'login', content: ENVS_README }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
             'scratch': {
                 type: 'dir', visibility: 'all', children: {
                     'palmvein': {
                         type: 'dir', visibility: 'all', children: {
                             'unseen': {
                                 type: 'dir', visibility: 'all', children: {
+                                    'README.md': { type: 'file', visibility: 'all', content: README_MD },
+                                    'code': {
+                                        type: 'dir', visibility: 'all', children: {
+                                            'train.py':        { type: 'file', visibility: 'all', content: TRAIN_PY },
+                                            'model.py':        { type: 'file', visibility: 'all', content: MODEL_PY },
+                                            'dataset.py':      { type: 'file', visibility: 'all', content: DATASET_PY },
+                                            'requirements.txt':{ type: 'file', visibility: 'all', content: REQUIREMENTS_TXT }
+                                        }
+                                    },
+                                    'train_palmvein.srm': { type: 'file', visibility: 'all', content: TRAIN_SRM },
+                                    'envs_readme.md':     { type: 'file', visibility: 'all', content: ENVS_README },
                                     'datasets': {
                                         type: 'dir', visibility: 'all', children: {
                                             'palm_vein': {

@@ -4,10 +4,11 @@
 
 export function renderNodeGrid(cluster) {
     const groups = [
-        { label: 'CPU — Intel Cascade Lake 48 cores, 384 GB', hwType: 'cpu', short: 'CPU' },
-        { label: 'BIGMEM — Intel Cascade Lake 48 cores, 768 GB', hwType: 'bigmem', short: 'BIGMEM' },
-        { label: 'GPU — 4× NVIDIA V100, 48 cores, 384 GB', hwType: 'gpu', short: 'GPU' },
-        { label: 'GDL — 8× NVIDIA V100 NVLink (Deep Learning)', hwType: 'gdl', short: 'GDL' }
+        { label: 'CPU AMD — Genoa-X 9684X, 192 cores, 768 GB', hwType: 'cpu_amd', short: 'CPU AMD' },
+        { label: 'H100 — 4× NVIDIA H100 SXM 80GB', hwType: 'h100', short: 'H100' },
+        { label: 'GH200 — 4× Grace Hopper', hwType: 'gh200', short: 'GH200' },
+        { label: 'MI300A — 2× AMD Instinct MI300A APU', hwType: 'mi300a', short: 'MI300A' },
+        { label: 'Grace — ARM CPU 144 cores', hwType: 'grace', short: 'GRACE' }
     ];
     const sections = [];
     for (const g of groups) {
@@ -17,17 +18,7 @@ export function renderNodeGrid(cluster) {
         const mix = nodes.filter(n => n.state === 'mix').length;
 
         const cells = nodes.map(n => {
-            // Build rich tooltip
-            const jobs = cluster.jobs.filter(j => j.allocatedNodes.includes(n.id) && j.state === 'R');
-            const jobInfo = jobs.length > 0
-                ? `\nJobs: ${jobs.map(j => `${j.name} (${j.user})`).join(', ')}`
-                : '\nLivre — sem jobs rodando';
-            const title = `${n.id} [${n.state.toUpperCase()}]`
-                + `\nCores: ${n.cpusAllocated}/${n.cpusTotal} usados`
-                + (n.gpusTotal > 0 ? `\nGPUs: ${n.gpusAllocated}/${n.gpusTotal} usadas` : '')
-                + `\nRAM: ${n.memGBAllocated}/${n.memGBTotal} GB`
-                + jobInfo;
-            return `<span id="${n.id}" class="node ${n.state}" title="${title.replace(/"/g, '&quot;')}"></span>`;
+            return `<span id="${n.id}" class="node ${n.state}"></span>`;
         }).join('');
 
         const summary = `${idle} livres, ${alloc} cheios${mix > 0 ? `, ${mix} parciais` : ''}`;

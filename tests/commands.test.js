@@ -16,7 +16,7 @@ import '../js/commands/utils.js';
 suite('parser');
 
 test('tokenize simple', () => {
-    assertEqual(tokenize('ls -la /prj'), ['ls', '-la', '/prj']);
+    assertEqual(tokenize('ls -la /scratch'), ['ls', '-la', '/scratch']);
 });
 
 test('tokenize double quotes', () => {
@@ -31,12 +31,12 @@ test('tokenize empty', () => {
 
 suite('commands');
 
-function ctx(hostname = 'sdumont15') {
+function ctx(hostname = 'sdumont2nd4') {
     const cluster = createCluster();
     const filesystem = createFilesystem();
     filesystem.setHost(hostname);
     filesystem.setUser('unseen');
-    filesystem.setCwd('/prj/palmvein/unseen');
+    filesystem.setCwd('/scratch/palmvein/unseen');
     return {
         cluster, filesystem,
         terminal: createTerminal(),
@@ -48,7 +48,7 @@ function ctx(hostname = 'sdumont15') {
 
 test('pwd returns cwd', () => {
     const r = dispatch(['pwd'], ctx());
-    assertContains(r.stdout, '/prj/palmvein/unseen');
+    assertContains(r.stdout, '/scratch/palmvein/unseen');
 });
 
 test('ls lists entries', () => {
@@ -71,27 +71,39 @@ test('unknown command returns error', () => {
     assertContains(r.stderr, 'comando não encontrado');
 });
 
-test('module avail lists modules', () => {
+test('module avail without arch shows architectures', () => {
     const r = dispatch(['module', 'avail'], ctx());
-    assertContains(r.stdout, 'cuda/11.2_sequana');
+    assertContains(r.stdout, 'arch_gpu/current');
+});
+
+test('module load arch + avail shows software', () => {
+    const c = ctx();
+    dispatch(['module', 'load', 'arch_gpu/current'], c);
+    const r = dispatch(['module', 'avail'], c);
+    assertContains(r.stdout, 'cuda/12.4');
 });
 
 test('module load + list works', () => {
     const c = ctx();
-    dispatch(['module', 'load', 'cuda/11.2_sequana'], c);
+    dispatch(['module', 'load', 'arch_gpu/current'], c);
+    dispatch(['module', 'load', 'cuda/12.4'], c);
     const r = dispatch(['module', 'list'], c);
-    assertContains(r.stdout, 'cuda/11.2_sequana');
+    assertContains(r.stdout, 'cuda/12.4');
 });
 
-test('module purge returns v1 error', () => {
-    const r = dispatch(['module', 'purge'], ctx());
-    assertContains(r.stderr, 'not supported');
+test('module purge clears all', () => {
+    const c = ctx();
+    dispatch(['module', 'load', 'arch_gpu/current'], c);
+    dispatch(['module', 'load', 'cuda/12.4'], c);
+    dispatch(['module', 'purge'], c);
+    const r = dispatch(['module', 'list'], c);
+    assertContains(r.stdout, 'No modules loaded');
 });
 
 test('sinfo shows partitions', () => {
     const r = dispatch(['sinfo'], ctx());
-    assertContains(r.stdout, 'sequana_cpu');
-    assertContains(r.stdout, 'gdl');
+    assertContains(r.stdout, 'lncc-cpu_amd');
+    assertContains(r.stdout, 'lncc-h100');
 });
 
 test('sbatch on valid script submits job', () => {
@@ -130,18 +142,18 @@ test('scancel cancels own job', () => {
 });
 
 test('nodeset -e expands range', () => {
-    const r = dispatch(['nodeset', '-e', 'sdumont[6000-6003]'], ctx());
-    assertContains(r.stdout, 'sdumont6000 sdumont6001 sdumont6002 sdumont6003');
+    const r = dispatch(['nodeset', '-e', 'sd2nd-h100-[001-004]'], ctx());
+    assertContains(r.stdout, 'sd2nd-h100-001 sd2nd-h100-002 sd2nd-h100-003 sd2nd-h100-004');
 });
 
-test('nvidia-smi on gdl node shows V100', () => {
-    const r = dispatch(['nvidia-smi'], ctx('sdumont4000'));
-    assertContains(r.stdout, 'V100');
+test('nvidia-smi on H100 node shows H100', () => {
+    const r = dispatch(['nvidia-smi'], ctx('sd2nd-h100-001'));
+    assertContains(r.stdout, 'H100');
 });
 
-test('nvidia-smi on login node fails', () => {
-    const r = dispatch(['nvidia-smi'], ctx('sdumont15'));
-    assertContains(r.stderr, 'No devices');
+test('nvidia-smi on login node shows H100', () => {
+    const r = dispatch(['nvidia-smi'], ctx('sdumont2nd4'));
+    assertContains(r.stdout, 'H100');
 });
 
 test('help lists commands', () => {

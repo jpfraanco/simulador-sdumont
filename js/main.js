@@ -18,11 +18,14 @@ import { renderSandboxCheatsheet } from './ui/sandbox.js';
 import { MODULES } from '../data/modules-index.js';
 import * as tourSdumont from '../data/tour.js';
 import * as tourOpenmp from '../data/tour-openmp.js';
+import * as tourGpu from '../data/tour-gpu.js';
 import { OPENMP_FILES } from '../data/openmp-files.js';
+import { CUDA_FILES } from '../data/cuda-files.js';
 
 const TOUR_MODULES = {
     sdumont: tourSdumont,
-    openmp: tourOpenmp
+    openmp: tourOpenmp,
+    gpu: tourGpu
 };
 
 // Self-registering command modules
@@ -32,6 +35,7 @@ import './commands/modules.js';
 import './commands/slurm.js';
 import './commands/utils.js';
 import './commands/compile.js';
+import './commands/cuda.js';
 
 console.log('[simulador-sdumont] booting...');
 
@@ -153,9 +157,10 @@ function bootSimulator(userId, moduleId = 'sdumont') {
     seedFictionalJobs(cluster);
     cluster.scheduleQueue();
 
-    // Load OpenMP fake files into filesystem
-    if (moduleId === 'openmp' || true) { // always load so files are available
-        for (const [path, content] of Object.entries(OPENMP_FILES)) {
+    // Load fake files into filesystem (always load all so files are available across modules)
+    const allFakeFiles = { ...OPENMP_FILES, ...CUDA_FILES };
+    if (true) {
+        for (const [path, content] of Object.entries(allFakeFiles)) {
             try {
                 // Ensure parent dirs exist
                 const parts = path.split('/').filter(Boolean);
@@ -304,7 +309,7 @@ function bootSimulator(userId, moduleId = 'sdumont') {
     refreshPrompt();
     terminal.appendOutput(`Simulador SDumont — ${userName}, bem-vindo(a)!`);
     terminal.appendOutput(`Módulo: ${moduleName}`);
-    terminal.appendOutput('Para entrar no cluster:  ssh unseen@sdumont15');
+    terminal.appendOutput('Para entrar no cluster:  ssh unseen@login.sdumont2nd.lncc.br');
     terminal.appendOutput('Para listar comandos:    help');
     terminal.appendOutput('');
     renderTerminal();

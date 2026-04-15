@@ -1,13 +1,13 @@
 // js/commands/ssh.js
 import { register } from './index.js';
 
-const LOGIN_NODES = ['sdumont15', 'sdumont16', 'sdumont17', 'sdumont18'];
+const LOGIN_NODES = ['sdumont2nd4', 'sdumont2nd5', 'sdumont2nd6', 'sdumont2nd7'];
 
 function parseHost(spec) {
     const m = spec.match(/^([^@]+)@(.+)$/);
     if (!m) return null;
     const [, user, host] = m;
-    if (host === 'login.sdumont.lncc.br' || host === 'sdumont') {
+    if (host === 'login.sdumont2nd.lncc.br' || host === 'sdumont2nd') {
         const landed = LOGIN_NODES[Math.floor(Math.random() * 4)];
         return { user, host: landed };
     }
@@ -17,7 +17,7 @@ function parseHost(spec) {
 
 register({
     name: 'ssh',
-    help: 'Conecta via SSH (ex: ssh unseen@sdumont15)',
+    help: 'Conecta via SSH (ex: ssh unseen@login.sdumont2nd.lncc.br)',
     run: (args, ctx) => {
         if (!args[0]) throw new Error('usage: ssh user@host');
         const parsed = parseHost(args[0]);
@@ -34,11 +34,11 @@ register({
         const banner = [
             '',
             `Last login: Fri Apr 11 15:42:01 2026 from user-local`,
-            `Welcome to Santos Dumont (Expansão v1 — 2019)`,
+            `Welcome to Santos Dumont 2nd (Bull Sequana XH3000 — 2024)`,
             `Login node: ${parsed.host}`,
             ``,
             `Importante: não execute workloads neste nó — use sbatch para submeter jobs.`,
-            `Manual: https://github.com/lncc-sered/manual-sdumont/wiki`,
+            `Manual: https://github.com/lncc-sered/manual-sdumont2nd/wiki`,
             ''
         ].join('\n');
         return { stdout: banner, signal: 'ssh-connected' };
@@ -54,7 +54,7 @@ register({
         const remote = dst.match(/^([^@]+)@([^:]+):(.+)$/);
         if (!remote) return '';
         const [, , host] = remote;
-        if (host !== 'login.sdumont.lncc.br' && !LOGIN_NODES.includes(host)) {
+        if (host !== 'login.sdumont2nd.lncc.br' && !LOGIN_NODES.includes(host)) {
             return { stdout: '', stderr: `ssh: Could not resolve hostname ${host}: unknown host`, exitCode: 1 };
         }
         return [

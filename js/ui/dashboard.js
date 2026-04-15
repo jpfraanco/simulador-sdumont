@@ -3,6 +3,7 @@
 import { renderNodeGrid } from './nodegrid.js';
 import { renderQueueView } from './queueview.js';
 import { cycleFictionalJobs } from '../users.js';
+import { mountNodeTooltip } from './node-tooltip.js';
 
 const TICK_MS = 2000;
 const SPEEDS = [1, 5, 10, 25, 50];
@@ -39,6 +40,9 @@ export function mountDashboard({ cluster, state, container, getCurrentUser }) {
             speedIdx = (speedIdx + 1) % SPEEDS.length;
             render();
         });
+        // Mount custom tooltip on node grid
+        const gridRoot = container.querySelector('.nodegrid-root');
+        if (gridRoot) mountNodeTooltip(gridRoot, cluster);
     }
     render();
 

@@ -209,7 +209,7 @@ register({
         return [
             `salloc: Pending job allocation ${jobId}`,
             `salloc: Granted job allocation ${jobId}`,
-            `salloc: Nodes sdumont6042 are ready for job`,
+            `salloc: Nodes sd2nd-cpu001 are ready for job`,
             ''
         ].join('\n');
     }

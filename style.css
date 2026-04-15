@@ -427,6 +427,64 @@ code { background: var(--surface-alt); padding: 1px 6px; border-radius: 3px; fon
 .speed-hint { color: var(--text-dim); font-size: 12px; opacity: 0.7; }
 .node-summary { font-weight: 400; color: var(--text-dim); font-size: 11px; margin-left: 8px; }
 
+/* Custom node tooltips */
+.node-tooltip {
+    position: fixed;
+    background: #151b23;
+    border: 1px solid var(--accent-alt);
+    border-radius: 8px;
+    padding: 0;
+    color: var(--text);
+    font-size: 13px;
+    max-width: 260px;
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s, transform 0.15s;
+    z-index: 500;
+}
+.node-tooltip.visible { opacity: 1; }
+.node-tooltip::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+}
+.node-tooltip.arrow-bottom::after {
+    bottom: -12px;
+    border-top-color: var(--accent-alt);
+}
+.node-tooltip.arrow-top::after {
+    top: -12px;
+    border-bottom-color: var(--accent-alt);
+}
+.node-tooltip-content { padding: 10px 14px; }
+.ntt-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+.ntt-name { font-family: var(--font-mono); font-weight: 700; font-size: 13px; }
+.ntt-state { font-weight: 600; font-size: 12px; text-transform: uppercase; }
+.ntt-resources { display: flex; flex-direction: column; gap: 4px; }
+.ntt-row { display: flex; align-items: center; gap: 6px; }
+.ntt-label { font-size: 11px; color: var(--text-dim); width: 28px; text-align: right; }
+.ntt-bar-wrap {
+    flex: 1; height: 6px; background: var(--surface-alt);
+    border-radius: 3px; overflow: hidden;
+}
+.ntt-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.ntt-val { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); min-width: 60px; }
+.ntt-jobs {
+    margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 2px;
+}
+.ntt-job { font-size: 12px; }
+.ntt-job-name { font-family: var(--font-mono); color: var(--accent); }
+.ntt-job-user { color: var(--text-dim); font-size: 11px; }
+.ntt-empty { margin-top: 6px; color: var(--text-dim); font-size: 12px; font-style: italic; }
+
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;

@@ -5,22 +5,45 @@ register({
     name: 'nvidia-smi',
     help: 'Estado das GPUs no nó atual',
     run: (args, ctx) => {
-        if (ctx.hostname === 'sdumont4000') {
+        const h = ctx.hostname || '';
+        // H100 nodes and login nodes (sdumont2nd4-5 have H100)
+        if (h.includes('h100') || h === 'sdumont2nd4' || h === 'sdumont2nd5') {
+            const gpuCount = h.includes('h100') ? 4 : 2;
             const lines = [
                 '+-----------------------------------------------------------------------------+',
-                '| NVIDIA-SMI 470.57.02    Driver Version: 470.57.02    CUDA Version: 11.4     |',
+                '| NVIDIA-SMI 550.54.15    Driver Version: 550.54.15    CUDA Version: 12.4     |',
                 '|-------------------------------+----------------------+----------------------+',
                 '| GPU  Name            Bus-Id        Memory-Usage | GPU-Util  Compute M. |',
                 '|===============================+======================+======================|'
             ];
-            for (let i = 0; i < 8; i++) {
-                lines.push(`|   ${i}  Tesla V100-SXM2 | 00000000:0${i}:00.0 | 14235MiB/16160MiB |     92%      Default |`);
+            for (let i = 0; i < gpuCount; i++) {
+                lines.push(`|   ${i}  NVIDIA H100 SXM | 00000000:0${i}:00.0 | 65280MiB/81920MiB |     94%      Default |`);
             }
             lines.push('+-----------------------------------------------------------------------------+');
             return lines.join('\n') + '\n';
         }
-        if (ctx.hostname && /^sdumont6\d{3}$/.test(ctx.hostname)) {
-            return '(4x Tesla V100, ~90% util, output abreviado)\n';
+        // GH200 nodes
+        if (h.includes('gh200')) {
+            const lines = [
+                '+-----------------------------------------------------------------------------+',
+                '| NVIDIA-SMI 550.54.15    Driver Version: 550.54.15    CUDA Version: 12.4     |',
+                '|-------------------------------+----------------------+----------------------+',
+                '| GPU  Name            Bus-Id        Memory-Usage | GPU-Util  Compute M. |',
+                '|===============================+======================+======================|'
+            ];
+            for (let i = 0; i < 4; i++) {
+                lines.push(`|   ${i}  NVIDIA GH200    | 00000000:0${i}:00.0 | 72000MiB/96000MiB |     88%      Default |`);
+            }
+            lines.push('+-----------------------------------------------------------------------------+');
+            return lines.join('\n') + '\n';
+        }
+        // MI300A nodes
+        if (h.includes('mi300a')) {
+            return '(2x AMD Instinct MI300A APU, ~85% util — use rocm-smi para MI300A)\n';
+        }
+        // Login nodes sdumont2nd6-7 have L40S
+        if (h === 'sdumont2nd6' || h === 'sdumont2nd7') {
+            return '(2x NVIDIA L40S — login node Petrobras, não para compute)\n';
         }
         return { stdout: '', stderr: 'No devices were found.', exitCode: 1 };
     }
@@ -31,11 +54,14 @@ register({
     help: 'Expande notação sdumont[NNNN-MMMM]',
     run: (args) => {
         if (args[0] === '-e' && args[1]) {
-            const m = args[1].match(/^(\w+?)\[(\d+)-(\d+)\]$/);
+            const m = args[1].match(/^(.+?)\[(\d+)-(\d+)\]$/);
             if (m) {
                 const [, prefix, start, end] = m;
+                const padLen = start.length;
                 const nodes = [];
-                for (let i = parseInt(start); i <= parseInt(end); i++) nodes.push(prefix + i);
+                for (let i = parseInt(start); i <= parseInt(end); i++) {
+                    nodes.push(prefix + String(i).padStart(padLen, '0'));
+                }
                 return nodes.join(' ') + '\n';
             }
             return args[1] + '\n';
@@ -48,10 +74,10 @@ register({
     name: 'df',
     help: 'Uso de disco',
     run: (args) => {
-        if (args.some(a => a.includes('/prj'))) {
+        if (args.some(a => a.includes('/scratch'))) {
             return [
                 `Filesystem                              Size  Used Avail Use% Mounted on`,
-                `isilonsdnfs.sdumont.lncc.br:/ifs/palmvein  100G   12G   88G  12% /prj/palmvein`,
+                `lustre-mdt.sdumont2nd.lncc.br:/scratch   3.0P  1.2P  1.8P  40% /scratch`,
                 ''
             ].join('\n');
         }
@@ -75,8 +101,8 @@ register({
         if (sub === 'df') {
             return [
                 `UUID                    bytes      Used   Available Use%`,
-                `scratch-OST0000         1024T     467T        557T  45% /scratch[OST:0]`,
-                `filesystem_summary:     1.1P      467T        632T  43% /scratch`,
+                `scratch-OST0000         3072T     1200T      1872T  39% /scratch[OST:0]`,
+                `filesystem_summary:     3.0P      1.2P       1.8P  40% /scratch`,
                 ''
             ].join('\n');
         }

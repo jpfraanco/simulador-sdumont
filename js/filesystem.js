@@ -3,7 +3,7 @@
 import { INITIAL_FS } from '../data/initial-fs.js';
 
 const HOME_BY_USER = {
-    unseen: '/prj/palmvein/unseen',
+    unseen: '/scratch/palmvein/unseen',
     pedro:  '/home/pedro'
 };
 
@@ -58,7 +58,7 @@ export function createFilesystem() {
         if (!node) return false;
         if (node.visibility === 'all') return true;
         if (node.visibility === 'login') {
-            return /^sdumont1[5-8]$/.test(hostname);
+            return /^sdumont2nd[4-7]$/.test(hostname);
         }
         return false;
     }

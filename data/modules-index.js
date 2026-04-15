@@ -26,8 +26,7 @@ export const MODULES = [
         subtitulo: 'Programação de aceleradores',
         emoji: '⚡',
         cor: '#d29922',
-        tourFile: '../data/tour-gpu.js',
-        comingSoon: true
+        tourFile: '../data/tour-gpu.js'
     },
     {
         id: 'mpi',

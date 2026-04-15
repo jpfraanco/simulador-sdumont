@@ -331,7 +331,7 @@ counter++;</code></pre>
         narracao: `
             <p>O job script que você acabou de ver usa 16 cores num único nó. Submete agora pra ver rodando:</p>
             <pre><code>sbatch openmp/openmp_job.srm</code></pre>
-            <p>Olha a fila à direita — seu job OpenMP aparece na partição <code>sequana_cpu</code> (CPU puro, sem GPU). Depois que começar a rodar, o nó alocado vai ficar amarelo (parcialmente ocupado) porque você está usando 16 de 48 cores.</p>
+            <p>Olha a fila à direita — seu job OpenMP aparece na partição <code>lncc-cpu_amd</code> (CPU puro, sem GPU). Depois que começar a rodar, o nó alocado vai ficar amarelo (parcialmente ocupado) porque você está usando 16 de 192 cores.</p>
         `,
         destaque: '#terminal',
         esperaComando: /^sbatch\s+openmp\/openmp_job\.srm/

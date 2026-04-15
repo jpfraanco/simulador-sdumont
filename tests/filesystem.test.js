@@ -4,42 +4,42 @@ import { createFilesystem } from '../js/filesystem.js';
 
 suite('filesystem');
 
-function fs(host = 'sdumont15') {
+function fs(host = 'sdumont2nd4') {
     const f = createFilesystem();
     f.setHost(host);
     f.setUser('unseen');
-    f.setCwd('/prj/palmvein/unseen');
+    f.setCwd('/scratch/palmvein/unseen');
     return f;
 }
 
 test('pwd returns initial cwd after setCwd', () => {
-    assertEqual(fs().pwd(), '/prj/palmvein/unseen');
+    assertEqual(fs().pwd(), '/scratch/palmvein/unseen');
 });
 
 test('cd to absolute path', () => {
     const f = fs();
-    f.cd('/scratch/palmvein/unseen');
-    assertEqual(f.pwd(), '/scratch/palmvein/unseen');
+    f.cd('/scratch/palmvein/unseen/datasets');
+    assertEqual(f.pwd(), '/scratch/palmvein/unseen/datasets');
 });
 
 test('cd to relative path', () => {
     const f = fs();
     f.cd('code');
-    assertEqual(f.pwd(), '/prj/palmvein/unseen/code');
+    assertEqual(f.pwd(), '/scratch/palmvein/unseen/code');
 });
 
 test('cd .. goes up', () => {
     const f = fs();
     f.cd('code');
     f.cd('..');
-    assertEqual(f.pwd(), '/prj/palmvein/unseen');
+    assertEqual(f.pwd(), '/scratch/palmvein/unseen');
 });
 
 test('cd ~ goes to home', () => {
     const f = fs();
-    f.cd('/scratch/palmvein/unseen');
+    f.cd('/scratch/palmvein/unseen/datasets');
     f.cd('~');
-    assertEqual(f.pwd(), '/prj/palmvein/unseen');
+    assertEqual(f.pwd(), '/scratch/palmvein/unseen');
 });
 
 test('cd to nonexistent throws', () => {
@@ -73,19 +73,14 @@ test('write creates file and cat reads it back', () => {
     assertEqual(f.cat('hello.txt'), 'Olá mundo');
 });
 
-test('/prj invisible on compute node', () => {
-    const f = fs('sdumont6042');
-    assertThrows(() => f.cd('/prj/palmvein/unseen'), 'No such file');
-});
-
 test('/scratch visible on compute node', () => {
-    const f = fs('sdumont6042');
+    const f = fs('sd2nd-h100-001');
     f.cd('/scratch/palmvein/unseen');
     assertEqual(f.pwd(), '/scratch/palmvein/unseen');
 });
 
-test('/prj visible on login node', () => {
-    const f = fs('sdumont15');
-    f.cd('/prj/palmvein/unseen');
-    assertEqual(f.pwd(), '/prj/palmvein/unseen');
+test('/scratch visible on login node', () => {
+    const f = fs('sdumont2nd4');
+    f.cd('/scratch/palmvein/unseen');
+    assertEqual(f.pwd(), '/scratch/palmvein/unseen');
 });

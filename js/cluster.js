@@ -3,15 +3,18 @@
 import { makeInitialCluster, HARDWARE } from '../data/initial-cluster.js';
 
 const PARTITION_TO_HWTYPE = {
-    sequana_cpu:             'cpu',
-    sequana_cpu_dev:         'cpu',
-    sequana_cpu_long:        'cpu',
-    sequana_cpu_bigmem:      'bigmem',
-    sequana_cpu_bigmem_long: 'bigmem',
-    sequana_gpu:             'gpu',
-    sequana_gpu_dev:         'gpu',
-    sequana_gpu_long:        'gpu',
-    gdl:                     'gdl'
+    'lncc-cpu_amd':       'cpu_amd',
+    'cpu_amd_dev':        'cpu_amd',
+    'lncc-h100':          'h100',
+    'lncc-h100_shared':   'h100',
+    'h100_dev':           'h100',
+    'lncc-gh200':         'gh200',
+    'lncc-gh200_shared':  'gh200',
+    'gh200_dev':          'gh200',
+    'lncc-mi300a':        'mi300a',
+    'lncc-mi300a_shared': 'mi300a',
+    'mi300a_dev':         'mi300a',
+    'lncc-grace':         'grace'
 };
 
 function walltimeToSec(str) {

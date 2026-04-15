@@ -1,9 +1,9 @@
 // js/commands/compile.js
 // Simulated gcc compilation and execution of compiled binaries.
-import { register } from './index.js';
+import { register, setExecutables } from './index.js';
 
 // Registry of "compiled" executables and their fake output
-const EXECUTABLES = new Map();
+export const EXECUTABLES = new Map();
 
 // Simulated compilation outputs
 const COMPILE_OUTPUTS = {
@@ -71,70 +71,5 @@ register({
     }
 });
 
-// Run compiled executables: ./hello, ./palm_preprocess, etc.
-register({
-    name: './',
-    help: 'Executa um programa compilado (ex: ./hello)',
-    run: (args, ctx) => {
-        // The command name is './' — reconstruct the full path
-        // Actually the parser splits './hello' into one token
-        return { stderr: 'Use o formato: ./nome_do_executavel', exitCode: 1 };
-    }
-});
-
-// Override dispatch to handle './' prefix commands
-// This is done by registering a catch-all in the main dispatcher
-// Instead, we register common executable names:
-function registerExeRunner(name) {
-    register({
-        name: `./${name}`,
-        help: `Executa o programa ${name}`,
-        run: (args, ctx) => {
-            const fn = EXECUTABLES.get(`./${name}`);
-            if (!fn) return { stderr: `bash: ./${name}: No such file or directory\n`, exitCode: 127 };
-            // Check for OMP_NUM_THREADS in environment prefix
-            return fn(4); // default 4 threads
-        }
-    });
-}
-
-// Pre-register expected executables
-['hello', 'palm_preprocess', 'race_bug', 'race_fixed', 'a.out'].forEach(registerExeRunner);
-
-// Handle OMP_NUM_THREADS=N ./exe pattern
-register({
-    name: 'OMP_NUM_THREADS=1',
-    run: (args, ctx) => runWithThreads(1, args, ctx)
-});
-register({
-    name: 'OMP_NUM_THREADS=2',
-    run: (args, ctx) => runWithThreads(2, args, ctx)
-});
-register({
-    name: 'OMP_NUM_THREADS=4',
-    run: (args, ctx) => runWithThreads(4, args, ctx)
-});
-register({
-    name: 'OMP_NUM_THREADS=8',
-    run: (args, ctx) => runWithThreads(8, args, ctx)
-});
-register({
-    name: 'OMP_NUM_THREADS=16',
-    run: (args, ctx) => runWithThreads(16, args, ctx)
-});
-register({
-    name: 'OMP_NUM_THREADS=24',
-    run: (args, ctx) => runWithThreads(24, args, ctx)
-});
-register({
-    name: 'OMP_NUM_THREADS=48',
-    run: (args, ctx) => runWithThreads(48, args, ctx)
-});
-
-function runWithThreads(n, args, ctx) {
-    const exe = args[0];
-    if (!exe) return { stderr: 'missing executable after OMP_NUM_THREADS=N\n', exitCode: 1 };
-    const fn = EXECUTABLES.get(exe);
-    if (!fn) return { stderr: `bash: ${exe}: No such file or directory\n`, exitCode: 127 };
-    return fn(n);
-}
+// Expose EXECUTABLES to the central dispatcher for dynamic ./exe resolution
+setExecutables(EXECUTABLES);

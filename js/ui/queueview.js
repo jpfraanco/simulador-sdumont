@@ -21,15 +21,18 @@ const REASON_TIPS = {
 };
 
 const PARTITION_TIPS = {
-    sequana_cpu:             'CPU Cascade Lake 48c, 384GB. Walltime max 96h.',
-    sequana_cpu_dev:         'CPU dev — max 20min, prioridade alta pra testes rápidos.',
-    sequana_cpu_long:        'CPU longo — até 744h (31 dias).',
-    sequana_cpu_bigmem:      'CPU BIGMEM 768GB RAM. Walltime 96h.',
-    sequana_cpu_bigmem_long: 'BIGMEM longo — até 744h.',
-    sequana_gpu:             '4× V100 por nó. Walltime 96h. Compartilhado.',
-    sequana_gpu_dev:         'GPU dev — max 20min, prioridade alta.',
-    sequana_gpu_long:        'GPU longo — até 744h.',
-    gdl:                     'Deep Learning: 1 nó, 8× V100 NVLink. Walltime 48h.'
+    'lncc-cpu_amd':       'CPU AMD Genoa-X 192c, 768GB. Walltime max 72h.',
+    'cpu_amd_dev':        'CPU dev — max 20min, prioridade alta pra testes rápidos.',
+    'lncc-h100':          '4× H100 SXM 80GB por nó (exclusivo). Walltime max 24h.',
+    'lncc-h100_shared':   '4× H100 por nó (compartilhado, 1-2 GPUs via GRES). Walltime 24h.',
+    'h100_dev':           'H100 dev — max 20min, prioridade alta.',
+    'lncc-gh200':         '4× Grace Hopper GH200 por nó (exclusivo). Walltime 24h.',
+    'lncc-gh200_shared':  'GH200 compartilhado, 1-2 GPUs via GRES. Walltime 24h.',
+    'gh200_dev':          'GH200 dev — max 20min.',
+    'lncc-mi300a':        '2× AMD MI300A APU por nó (exclusivo). Walltime 24h.',
+    'lncc-mi300a_shared': 'MI300A compartilhado, 1 GPU via GRES. Walltime 24h.',
+    'mi300a_dev':         'MI300A dev — max 20min.',
+    'lncc-grace':         'Grace ARM CPU-only, 144 cores. Walltime 72h.'
 };
 
 function fmtElapsed(sec) {
